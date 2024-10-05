@@ -3,9 +3,11 @@ package com.dpAnalytics.PaymentService.service;
 import com.dpAnalytics.PaymentService.entity.TransactionDetails;
 import com.dpAnalytics.PaymentService.model.PaymentMode;
 import com.dpAnalytics.PaymentService.model.PaymentRequest;
+import com.dpAnalytics.PaymentService.model.PaymentResponse;
 import com.dpAnalytics.PaymentService.repository.TransactionDetailsRepository;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -35,5 +37,22 @@ public class PaymentServiceImpl implements PaymentService {
         log.info("Transaction completed with reference number: {}", transactionDetails.getId());
 
         return transactionDetails.getId();
+    }
+
+    @Override
+    public PaymentResponse getPaymentDetailsByOrderId(long orderId) {
+        log.info("Getting Payment details for orderId: " + orderId);
+        TransactionDetails transactionDetails = transactionDetailsRepository.findByOrderId(orderId);
+        PaymentResponse paymentResponse = PaymentResponse.builder()
+                .orderId(transactionDetails.getOrderId())
+                .paymentId(transactionDetails.getId())
+                .paymentMode(PaymentMode.valueOf(transactionDetails.getPaymentMode()))
+                .paymentDate(transactionDetails.getPaymentDate())
+                .amount(transactionDetails.getAmount())
+                .status(transactionDetails.getPaymentStatus())
+                .build();
+
+        log.info("Payment details fetched successfully for orderId: " + orderId);
+        return paymentResponse;
     }
 }
